@@ -1,0 +1,96 @@
+name: Build and Test
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+on:
+  push:
+    branches:
+      - main  # ou a branch que deseja monitorar
+  pull_request:
+    branches:
+      - main  # ou a branch que deseja monitorar
+
+jobs:
+  build-and-test:
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '8.x'  # Substitua pela versão do .NET que você está usando
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build
+
+    - name: Run unit tests
+      run: dotnet test --filter TestCategory=unit /p:CollectCoverage=true /p:IncludeTestAssembly=true /p:CoverletOutputFormat=lcov /p:CoverletOutput=./lcov.info /p:ExcludeByFile="**/*Migrations/*.cs"
+
+    - name: Install coverlet
+      run: dotnet tool install -g dotnet-reportgenerator-globaltool
+
+    - name: Generate code coverage report
+      run: mkdir docs
+
+    - name: Generate reporty
+      run: reportgenerator -reports:lcov.info -targetdir:.coverage
+
+    - name: Integration test
+      run: dotnet test --filter TestCategory=integration
+
+    # - name: Checkout
+    #   uses: actions/checkout@v3
+
+    #- run: reportgenerator -reports:lcov.info -targetdir:.coverage
+    - name: Setup Pages
+      uses: actions/configure-pages@v2
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v1
+      with:
+          # Upload the coverage directory from the repository
+          path: './.coverage/'
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v1
+
+  # deploy:
+  #   needs: build-and-test
+  #   environment:
+  #       name: github-pages
+  #       url: ${{ steps.deployment.outputs.page_url }}
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #       - name: Checkout
+  #         uses: actions/checkout@v3
+
+  #       - run: reportgenerator -reports:lcov.info -targetdir:.coverage
+  #       - name: Setup Pages
+  #         uses: actions/configure-pages@v2
+  #       - name: Upload artifact
+  #         uses: actions/upload-pages-artifact@v1
+  #         with:
+  #             # Upload the coverage directory from the repository
+  #             path: './coverage/'
+  #       - name: Deploy to GitHub Pages
+  #         id: deployment
+  #         uses: actions/deploy-pages@v1

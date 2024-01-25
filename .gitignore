@@ -1,0 +1,8 @@
+﻿**/obj
+/out
+/bin
+.env
+.vs
+coverage.json
+*.info
+.coverage

@@ -1,0 +1,25 @@
+version: "3.8"
+
+networks:
+  default:
+    driver: bridge
+
+services:
+  api:
+    build: .
+    ports:
+      - '5235:5235'
+      - '8080:8080'
+    networks:
+      - default
+    env_file: .env
+
+  db:
+    image: mcr.microsoft.com/mssql/server
+    ports:
+      - 1433:1433
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=#dadospro3131
+
+
