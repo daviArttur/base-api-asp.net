@@ -33,9 +33,9 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '8.x'  # Substitua pela versão do .NET que você está usando
+        dotnet-version: '8.x'
 
     - name: Restore dependencies
       run: dotnet restore
